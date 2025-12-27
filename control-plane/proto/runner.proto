@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package runner.v1;
+
+option go_package = "ci-platform/control-plane/proto/runnerpb";
+
+service RunnerGateway {
+    rpc RegisterRunner(RegisterRunnerRequest) returns (RegisterRunnerResponse);
+    rpc LeaseJob(LeaseJobRequest) returns (LeaseJobResponse);
+    rpc ReportEvent(stream RunnerEvent) returns (ReportAck);
+    rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+message RegisterRunnerRequest {
+    string runner_name = 1;
+    repeated string labels = 2; // e.g., ["docker", "linux", "x64"]
+}
+
+message RegisterRunnerResponse {
+    bool ok = 1;
+}
+
+message HeartbeatRequest {
+    string runner_id = 1;
+    repeated string labels = 2; // e.g., ["docker", "linux", "x64"]
+}
+
+message HeartbeatResponse {
+    bool ok = 1;
+}
+
+message LeaseJobRequest {
+    string runner_id = 1;
+    repeated string labels = 2; // e.g., ["docker", "linux", "x64"]
+
+    //optional: runner can request only certain pool/label; MVP: ignore
+    // string runs_on = 3
+}
+
+message LeaseJobResponse {
+    // if no job is available, has_job is false and job_spec is empty
+    bool has_job = 1;
+    JobSpec job_spec = 2; // present if has_job is true
+}
+
+message JobSpec {
+    string job_id = 1;
+    string run_id = 2;
+    string repo = 3;
+    string ref = 4; // branch or tag
+    string commit_sha = 5;
+    string job_name = 6;
+    repeated StepSpec steps = 7;
+    
+    // optional: environment variables, secrets, etc.
+    string container_image = 8; // e.g., "ubuntu:20.04"
+}
+
+message StepSpec {
+    string step_id = 1;
+    string name = 2;
+    string command = 3; // e.g., "make test"
+}
+
+message RunnerEvent {
+    string runner_id = 1;
+    string job_id = 2;
+    
+    oneof event {
+        StepStarted step_started = 10;
+        LongChunk long_chunk = 11;
+        StepFinished step_finished = 12;
+        JobFinished job_finished = 13;
+        
+    }
+}
+
+message StepStarted {
+    string step_id = 1;
+    int64 ts_unix_ms = 2; // timestamp in milliseconds
+}
+
+message LongChunk {
+    string step_id = 1; // 0 if unknown/not applicable
+    string content = 2; // log data chunk
+    int64 ts_unix_ms = 3; // timestamp in milliseconds
+    // string chunk_data = 3; // log data chunk
+    // bool is_last_chunk = 4; // indicates if this is the last chunk for the step
+}
+
+message StepFinished {
+    string step_id = 1;
+    int32 exit_code = 2; // 0 for success, non-zero for failure
+    string status = 3; // "success" or "failure"
+    string error_message = 4; // optional error message
+    int64 ts_unix_ms = 5; // timestamp in milliseconds
+}
+
+message JobFinished {
+    // string job_id = 1;
+    string status = 1; // "success" or "failure"
+    string error_message = 2; // optional error message
+    int64 ts_unix_ms = 3; // timestamp in milliseconds
+}
+
+message ReportAck {
+    bool ok = 1;
+}

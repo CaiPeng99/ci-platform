@@ -20,3 +20,16 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+# Rust
+runner/target/
+runner/Cargo.lock
+
+# Go
+vendor/
+*.exe
+*.dll
+*.so
+*.dylib
+```
+

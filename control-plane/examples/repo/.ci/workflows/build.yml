@@ -1,0 +1,21 @@
+name: Build and Test
+
+jobs:
+  build:
+    name: Build
+    steps:
+      - name: Checkout
+        run: echo "Checking out code..."
+      - name: Install Dependencies
+        run: echo "Installing dependencies..."
+      - name: Build
+        run: echo "Building project..."
+  
+  test:
+    name: Test
+    needs: [build]
+    steps:
+      - name: Run Tests
+        run: echo "Running tests..."
+      - name: Run Linter
+        run: echo "Running linter..."
