@@ -54,6 +54,8 @@ message JobSpec {
     
     // optional: environment variables, secrets, etc.
     string container_image = 8; // e.g., "ubuntu:20.04"
+
+    string repo_path = 9; 
 }
 
 message StepSpec {
