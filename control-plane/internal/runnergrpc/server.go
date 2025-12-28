@@ -106,6 +106,7 @@ func (s *RunnerServer) LeaseJob(ctx context.Context, req *runnerpb.LeaseJobReque
 				CommitSha: spec.CommitSHA,
 				JobName:  spec.JobName,
 				ContainerImage: "ci-runner-image:latest", // hardcoded for now
+				RepoPath:       spec.Repo, 
 			},
 		}
 		for _, step := range spec.Steps {

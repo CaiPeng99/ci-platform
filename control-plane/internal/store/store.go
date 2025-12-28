@@ -10,7 +10,7 @@ type Run struct {
 	Repo string
 	Ref string
 	CommitSHA string
-	// Branch string
+	Branch string
 	Trigger string
 	Status string
 	CreatedAt time.Time
@@ -113,4 +113,7 @@ type Store interface {
 	GetDependentJobs(ctx context.Context, runID int64, jobName string) ([]Job, error)
 	GetJobByNameAndRun(ctx context.Context, runID int64, jobName string) (*Job, error)
 	MarkJobSkipped(ctx context.Context, jobID int64) error
+
+	// added
+	GetRun(ctx context.Context, runID int64) (*Run, error) 
 }

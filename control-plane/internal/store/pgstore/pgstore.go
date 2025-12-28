@@ -618,8 +618,58 @@ func (s *PGStore) GetJobByNameAndRun(ctx context.Context, runID int64, jobName s
 func (s *PGStore) MarkJobSkipped(ctx context.Context, jobID int64) error {
 	_, err := s.pool.Exec(ctx,
 		`UPDATE jobs 
-		 SET status = 'skipped', updated_at = now() 
+		 SET status = 'skipped'
 		 WHERE id = $1`,
 		jobID)
 	return err
+}
+
+func (s *PGStore) GetRun(ctx context.Context, runID int64) (*store.Run, error) {
+	query := `
+		SELECT id, repo, ref, commit_sha, trigger, status, branch,
+		       created_at, started_at, finished_at, error_message
+		FROM runs 
+		WHERE id = $1
+	`
+	
+	var run store.Run
+	var branch *string
+	var startedAt, finishedAt *time.Time
+	var errorMsg *string
+	
+	err := s.pool.QueryRow(ctx, query, runID).Scan(
+		&run.ID,
+		&run.Repo,
+		&run.Ref,
+		&run.CommitSHA,
+		&run.Trigger,
+		&branch,
+		&run.Status,
+		&run.CreatedAt,
+		&startedAt,
+		&finishedAt,
+		&errorMsg,
+	)
+	
+	if err == pgx.ErrNoRows {
+		return nil, fmt.Errorf("run %d not found", runID)
+	}
+	if err != nil {
+		return nil, err
+	}
+	
+	if branch != nil {
+		run.Branch = *branch
+	}
+	if startedAt != nil {
+		run.StartedAt = startedAt
+	}
+	if finishedAt != nil {
+		run.FinishedAt = finishedAt
+	}
+	if errorMsg != nil {
+		run.ErrorMessage = errorMsg
+	}
+	
+	return &run, nil
 }

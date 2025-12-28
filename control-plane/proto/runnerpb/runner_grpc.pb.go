@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v6.33.2
-// source: runner.proto
+// source: proto/runner.proto
 
 package runnerpb
 
@@ -225,5 +225,5 @@ var RunnerGateway_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "runner.proto",
+	Metadata: "proto/runner.proto",
 }

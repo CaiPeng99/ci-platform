@@ -8,7 +8,7 @@
 -- );
 
 create type run_status as enum ('queued','running','success','failed','canceled');
-create type job_status as enum ('pending','running','success','failed','canceled', 'queued');
+create type job_status as enum ('pending','running','success','failed','canceled', 'queued', 'skipped');
 create type step_status as enum ('pending','running','success','failed','canceled');
 
 -- CREATE TABLE projects (

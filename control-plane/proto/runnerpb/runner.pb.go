@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v6.33.2
-// source: runner.proto
+// source: proto/runner.proto
 
 package runnerpb
 
@@ -31,7 +31,7 @@ type RegisterRunnerRequest struct {
 
 func (x *RegisterRunnerRequest) Reset() {
 	*x = RegisterRunnerRequest{}
-	mi := &file_runner_proto_msgTypes[0]
+	mi := &file_proto_runner_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +43,7 @@ func (x *RegisterRunnerRequest) String() string {
 func (*RegisterRunnerRequest) ProtoMessage() {}
 
 func (x *RegisterRunnerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[0]
+	mi := &file_proto_runner_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +56,7 @@ func (x *RegisterRunnerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterRunnerRequest.ProtoReflect.Descriptor instead.
 func (*RegisterRunnerRequest) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{0}
+	return file_proto_runner_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *RegisterRunnerRequest) GetRunnerName() string {
@@ -82,7 +82,7 @@ type RegisterRunnerResponse struct {
 
 func (x *RegisterRunnerResponse) Reset() {
 	*x = RegisterRunnerResponse{}
-	mi := &file_runner_proto_msgTypes[1]
+	mi := &file_proto_runner_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -94,7 +94,7 @@ func (x *RegisterRunnerResponse) String() string {
 func (*RegisterRunnerResponse) ProtoMessage() {}
 
 func (x *RegisterRunnerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[1]
+	mi := &file_proto_runner_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -107,7 +107,7 @@ func (x *RegisterRunnerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterRunnerResponse.ProtoReflect.Descriptor instead.
 func (*RegisterRunnerResponse) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{1}
+	return file_proto_runner_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *RegisterRunnerResponse) GetOk() bool {
@@ -127,7 +127,7 @@ type HeartbeatRequest struct {
 
 func (x *HeartbeatRequest) Reset() {
 	*x = HeartbeatRequest{}
-	mi := &file_runner_proto_msgTypes[2]
+	mi := &file_proto_runner_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -139,7 +139,7 @@ func (x *HeartbeatRequest) String() string {
 func (*HeartbeatRequest) ProtoMessage() {}
 
 func (x *HeartbeatRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[2]
+	mi := &file_proto_runner_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,7 +152,7 @@ func (x *HeartbeatRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HeartbeatRequest.ProtoReflect.Descriptor instead.
 func (*HeartbeatRequest) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{2}
+	return file_proto_runner_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *HeartbeatRequest) GetRunnerId() string {
@@ -178,7 +178,7 @@ type HeartbeatResponse struct {
 
 func (x *HeartbeatResponse) Reset() {
 	*x = HeartbeatResponse{}
-	mi := &file_runner_proto_msgTypes[3]
+	mi := &file_proto_runner_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -190,7 +190,7 @@ func (x *HeartbeatResponse) String() string {
 func (*HeartbeatResponse) ProtoMessage() {}
 
 func (x *HeartbeatResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[3]
+	mi := &file_proto_runner_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -203,7 +203,7 @@ func (x *HeartbeatResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HeartbeatResponse.ProtoReflect.Descriptor instead.
 func (*HeartbeatResponse) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{3}
+	return file_proto_runner_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *HeartbeatResponse) GetOk() bool {
@@ -223,7 +223,7 @@ type LeaseJobRequest struct {
 
 func (x *LeaseJobRequest) Reset() {
 	*x = LeaseJobRequest{}
-	mi := &file_runner_proto_msgTypes[4]
+	mi := &file_proto_runner_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -235,7 +235,7 @@ func (x *LeaseJobRequest) String() string {
 func (*LeaseJobRequest) ProtoMessage() {}
 
 func (x *LeaseJobRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[4]
+	mi := &file_proto_runner_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -248,7 +248,7 @@ func (x *LeaseJobRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaseJobRequest.ProtoReflect.Descriptor instead.
 func (*LeaseJobRequest) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{4}
+	return file_proto_runner_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *LeaseJobRequest) GetRunnerId() string {
@@ -276,7 +276,7 @@ type LeaseJobResponse struct {
 
 func (x *LeaseJobResponse) Reset() {
 	*x = LeaseJobResponse{}
-	mi := &file_runner_proto_msgTypes[5]
+	mi := &file_proto_runner_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -288,7 +288,7 @@ func (x *LeaseJobResponse) String() string {
 func (*LeaseJobResponse) ProtoMessage() {}
 
 func (x *LeaseJobResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[5]
+	mi := &file_proto_runner_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -301,7 +301,7 @@ func (x *LeaseJobResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaseJobResponse.ProtoReflect.Descriptor instead.
 func (*LeaseJobResponse) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{5}
+	return file_proto_runner_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *LeaseJobResponse) GetHasJob() bool {
@@ -329,13 +329,14 @@ type JobSpec struct {
 	Steps     []*StepSpec            `protobuf:"bytes,7,rep,name=steps,proto3" json:"steps,omitempty"`
 	// optional: environment variables, secrets, etc.
 	ContainerImage string `protobuf:"bytes,8,opt,name=container_image,json=containerImage,proto3" json:"container_image,omitempty"` // e.g., "ubuntu:20.04"
+	RepoPath       string `protobuf:"bytes,9,opt,name=repo_path,json=repoPath,proto3" json:"repo_path,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *JobSpec) Reset() {
 	*x = JobSpec{}
-	mi := &file_runner_proto_msgTypes[6]
+	mi := &file_proto_runner_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -347,7 +348,7 @@ func (x *JobSpec) String() string {
 func (*JobSpec) ProtoMessage() {}
 
 func (x *JobSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[6]
+	mi := &file_proto_runner_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -360,7 +361,7 @@ func (x *JobSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JobSpec.ProtoReflect.Descriptor instead.
 func (*JobSpec) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{6}
+	return file_proto_runner_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *JobSpec) GetJobId() string {
@@ -419,6 +420,13 @@ func (x *JobSpec) GetContainerImage() string {
 	return ""
 }
 
+func (x *JobSpec) GetRepoPath() string {
+	if x != nil {
+		return x.RepoPath
+	}
+	return ""
+}
+
 type StepSpec struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	StepId        string                 `protobuf:"bytes,1,opt,name=step_id,json=stepId,proto3" json:"step_id,omitempty"`
@@ -430,7 +438,7 @@ type StepSpec struct {
 
 func (x *StepSpec) Reset() {
 	*x = StepSpec{}
-	mi := &file_runner_proto_msgTypes[7]
+	mi := &file_proto_runner_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -442,7 +450,7 @@ func (x *StepSpec) String() string {
 func (*StepSpec) ProtoMessage() {}
 
 func (x *StepSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[7]
+	mi := &file_proto_runner_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -455,7 +463,7 @@ func (x *StepSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StepSpec.ProtoReflect.Descriptor instead.
 func (*StepSpec) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{7}
+	return file_proto_runner_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *StepSpec) GetStepId() string {
@@ -496,7 +504,7 @@ type RunnerEvent struct {
 
 func (x *RunnerEvent) Reset() {
 	*x = RunnerEvent{}
-	mi := &file_runner_proto_msgTypes[8]
+	mi := &file_proto_runner_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -508,7 +516,7 @@ func (x *RunnerEvent) String() string {
 func (*RunnerEvent) ProtoMessage() {}
 
 func (x *RunnerEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[8]
+	mi := &file_proto_runner_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -521,7 +529,7 @@ func (x *RunnerEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunnerEvent.ProtoReflect.Descriptor instead.
 func (*RunnerEvent) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{8}
+	return file_proto_runner_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RunnerEvent) GetRunnerId() string {
@@ -619,7 +627,7 @@ type StepStarted struct {
 
 func (x *StepStarted) Reset() {
 	*x = StepStarted{}
-	mi := &file_runner_proto_msgTypes[9]
+	mi := &file_proto_runner_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -631,7 +639,7 @@ func (x *StepStarted) String() string {
 func (*StepStarted) ProtoMessage() {}
 
 func (x *StepStarted) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[9]
+	mi := &file_proto_runner_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -644,7 +652,7 @@ func (x *StepStarted) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StepStarted.ProtoReflect.Descriptor instead.
 func (*StepStarted) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{9}
+	return file_proto_runner_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *StepStarted) GetStepId() string {
@@ -672,7 +680,7 @@ type LongChunk struct {
 
 func (x *LongChunk) Reset() {
 	*x = LongChunk{}
-	mi := &file_runner_proto_msgTypes[10]
+	mi := &file_proto_runner_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -684,7 +692,7 @@ func (x *LongChunk) String() string {
 func (*LongChunk) ProtoMessage() {}
 
 func (x *LongChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[10]
+	mi := &file_proto_runner_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -697,7 +705,7 @@ func (x *LongChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LongChunk.ProtoReflect.Descriptor instead.
 func (*LongChunk) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{10}
+	return file_proto_runner_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *LongChunk) GetStepId() string {
@@ -734,7 +742,7 @@ type StepFinished struct {
 
 func (x *StepFinished) Reset() {
 	*x = StepFinished{}
-	mi := &file_runner_proto_msgTypes[11]
+	mi := &file_proto_runner_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -746,7 +754,7 @@ func (x *StepFinished) String() string {
 func (*StepFinished) ProtoMessage() {}
 
 func (x *StepFinished) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[11]
+	mi := &file_proto_runner_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -759,7 +767,7 @@ func (x *StepFinished) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StepFinished.ProtoReflect.Descriptor instead.
 func (*StepFinished) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{11}
+	return file_proto_runner_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *StepFinished) GetStepId() string {
@@ -809,7 +817,7 @@ type JobFinished struct {
 
 func (x *JobFinished) Reset() {
 	*x = JobFinished{}
-	mi := &file_runner_proto_msgTypes[12]
+	mi := &file_proto_runner_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -821,7 +829,7 @@ func (x *JobFinished) String() string {
 func (*JobFinished) ProtoMessage() {}
 
 func (x *JobFinished) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[12]
+	mi := &file_proto_runner_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -834,7 +842,7 @@ func (x *JobFinished) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JobFinished.ProtoReflect.Descriptor instead.
 func (*JobFinished) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{12}
+	return file_proto_runner_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *JobFinished) GetStatus() string {
@@ -867,7 +875,7 @@ type ReportAck struct {
 
 func (x *ReportAck) Reset() {
 	*x = ReportAck{}
-	mi := &file_runner_proto_msgTypes[13]
+	mi := &file_proto_runner_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -879,7 +887,7 @@ func (x *ReportAck) String() string {
 func (*ReportAck) ProtoMessage() {}
 
 func (x *ReportAck) ProtoReflect() protoreflect.Message {
-	mi := &file_runner_proto_msgTypes[13]
+	mi := &file_proto_runner_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -892,7 +900,7 @@ func (x *ReportAck) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReportAck.ProtoReflect.Descriptor instead.
 func (*ReportAck) Descriptor() ([]byte, []int) {
-	return file_runner_proto_rawDescGZIP(), []int{13}
+	return file_proto_runner_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ReportAck) GetOk() bool {
@@ -902,11 +910,11 @@ func (x *ReportAck) GetOk() bool {
 	return false
 }
 
-var File_runner_proto protoreflect.FileDescriptor
+var File_proto_runner_proto protoreflect.FileDescriptor
 
-const file_runner_proto_rawDesc = "" +
+const file_proto_runner_proto_rawDesc = "" +
 	"\n" +
-	"\frunner.proto\x12\trunner.v1\"P\n" +
+	"\x12proto/runner.proto\x12\trunner.v1\"P\n" +
 	"\x15RegisterRunnerRequest\x12\x1f\n" +
 	"\vrunner_name\x18\x01 \x01(\tR\n" +
 	"runnerName\x12\x16\n" +
@@ -923,7 +931,7 @@ const file_runner_proto_rawDesc = "" +
 	"\x06labels\x18\x02 \x03(\tR\x06labels\"Z\n" +
 	"\x10LeaseJobResponse\x12\x17\n" +
 	"\ahas_job\x18\x01 \x01(\bR\x06hasJob\x12-\n" +
-	"\bjob_spec\x18\x02 \x01(\v2\x12.runner.v1.JobSpecR\ajobSpec\"\xeb\x01\n" +
+	"\bjob_spec\x18\x02 \x01(\v2\x12.runner.v1.JobSpecR\ajobSpec\"\x88\x02\n" +
 	"\aJobSpec\x12\x15\n" +
 	"\x06job_id\x18\x01 \x01(\tR\x05jobId\x12\x15\n" +
 	"\x06run_id\x18\x02 \x01(\tR\x05runId\x12\x12\n" +
@@ -933,7 +941,8 @@ const file_runner_proto_rawDesc = "" +
 	"commit_sha\x18\x05 \x01(\tR\tcommitSha\x12\x19\n" +
 	"\bjob_name\x18\x06 \x01(\tR\ajobName\x12)\n" +
 	"\x05steps\x18\a \x03(\v2\x13.runner.v1.StepSpecR\x05steps\x12'\n" +
-	"\x0fcontainer_image\x18\b \x01(\tR\x0econtainerImage\"Q\n" +
+	"\x0fcontainer_image\x18\b \x01(\tR\x0econtainerImage\x12\x1b\n" +
+	"\trepo_path\x18\t \x01(\tR\brepoPath\"Q\n" +
 	"\bStepSpec\x12\x17\n" +
 	"\astep_id\x18\x01 \x01(\tR\x06stepId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
@@ -978,19 +987,19 @@ const file_runner_proto_rawDesc = "" +
 	"\tHeartbeat\x12\x1b.runner.v1.HeartbeatRequest\x1a\x1c.runner.v1.HeartbeatResponseB*Z(ci-platform/control-plane/proto/runnerpbb\x06proto3"
 
 var (
-	file_runner_proto_rawDescOnce sync.Once
-	file_runner_proto_rawDescData []byte
+	file_proto_runner_proto_rawDescOnce sync.Once
+	file_proto_runner_proto_rawDescData []byte
 )
 
-func file_runner_proto_rawDescGZIP() []byte {
-	file_runner_proto_rawDescOnce.Do(func() {
-		file_runner_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_runner_proto_rawDesc), len(file_runner_proto_rawDesc)))
+func file_proto_runner_proto_rawDescGZIP() []byte {
+	file_proto_runner_proto_rawDescOnce.Do(func() {
+		file_proto_runner_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_runner_proto_rawDesc), len(file_proto_runner_proto_rawDesc)))
 	})
-	return file_runner_proto_rawDescData
+	return file_proto_runner_proto_rawDescData
 }
 
-var file_runner_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
-var file_runner_proto_goTypes = []any{
+var file_proto_runner_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_proto_runner_proto_goTypes = []any{
 	(*RegisterRunnerRequest)(nil),  // 0: runner.v1.RegisterRunnerRequest
 	(*RegisterRunnerResponse)(nil), // 1: runner.v1.RegisterRunnerResponse
 	(*HeartbeatRequest)(nil),       // 2: runner.v1.HeartbeatRequest
@@ -1006,7 +1015,7 @@ var file_runner_proto_goTypes = []any{
 	(*JobFinished)(nil),            // 12: runner.v1.JobFinished
 	(*ReportAck)(nil),              // 13: runner.v1.ReportAck
 }
-var file_runner_proto_depIdxs = []int32{
+var file_proto_runner_proto_depIdxs = []int32{
 	6,  // 0: runner.v1.LeaseJobResponse.job_spec:type_name -> runner.v1.JobSpec
 	7,  // 1: runner.v1.JobSpec.steps:type_name -> runner.v1.StepSpec
 	9,  // 2: runner.v1.RunnerEvent.step_started:type_name -> runner.v1.StepStarted
@@ -1028,12 +1037,12 @@ var file_runner_proto_depIdxs = []int32{
 	0,  // [0:6] is the sub-list for field type_name
 }
 
-func init() { file_runner_proto_init() }
-func file_runner_proto_init() {
-	if File_runner_proto != nil {
+func init() { file_proto_runner_proto_init() }
+func file_proto_runner_proto_init() {
+	if File_proto_runner_proto != nil {
 		return
 	}
-	file_runner_proto_msgTypes[8].OneofWrappers = []any{
+	file_proto_runner_proto_msgTypes[8].OneofWrappers = []any{
 		(*RunnerEvent_StepStarted)(nil),
 		(*RunnerEvent_LongChunk)(nil),
 		(*RunnerEvent_StepFinished)(nil),
@@ -1043,17 +1052,17 @@ func file_runner_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_runner_proto_rawDesc), len(file_runner_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_runner_proto_rawDesc), len(file_proto_runner_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_runner_proto_goTypes,
-		DependencyIndexes: file_runner_proto_depIdxs,
-		MessageInfos:      file_runner_proto_msgTypes,
+		GoTypes:           file_proto_runner_proto_goTypes,
+		DependencyIndexes: file_proto_runner_proto_depIdxs,
+		MessageInfos:      file_proto_runner_proto_msgTypes,
 	}.Build()
-	File_runner_proto = out.File
-	file_runner_proto_goTypes = nil
-	file_runner_proto_depIdxs = nil
+	File_proto_runner_proto = out.File
+	file_proto_runner_proto_goTypes = nil
+	file_proto_runner_proto_depIdxs = nil
 }
