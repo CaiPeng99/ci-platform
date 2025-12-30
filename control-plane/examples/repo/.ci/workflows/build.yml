@@ -4,6 +4,7 @@ jobs:
   build:
     name: Build
     steps:
+      # v1
       # - name: Checkout
       #   run: echo "Checking out code..."
       # - name: Install Dependencies
@@ -11,14 +12,28 @@ jobs:
       # - name: Build
       #   run: echo "Building project..."
       - name: Build Binary
-        run: go build -v .
+        # need to add workspace/
+        run: |
+          go build -o demo .
+          mkdir -p /workspace/artifacts
+          cp demo /workspace/artifacts/demo-binary
+          echo "Build: $(date)" > /workspace/artifacts/build-info.txt
+          ls -lh /workspace/artifacts/
   
   test:
     name: Test
     needs: [build]
     steps:
       - name: Run Tests
-        run: go test -v ./...
+        run: |
+          go test -v -coverprofile=coverage.out ./...
+          mkdir -p /workspace/artifacts
+          cp coverage.out /workspace/artifacts/
+          echo "Tests passed: $(date)" > /workspace/artifacts/test-report.txt
+
+        # v2:
+        # run: go test -v ./...
+      # v1:
       #   run: echo "Running tests..."
       # - name: Run Linter
       #   run: echo "Running linter..."
