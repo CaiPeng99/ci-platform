@@ -6,6 +6,7 @@ jobs:
     steps:
       - name: Build Binary
         # need to add workspace/
+        # remove previous comments
         run: |
           go build -o demo .
           mkdir -p /workspace/artifacts
