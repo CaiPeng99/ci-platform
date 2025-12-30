@@ -4,13 +4,6 @@ jobs:
   build:
     name: Build
     steps:
-      # v1
-      # - name: Checkout
-      #   run: echo "Checking out code..."
-      # - name: Install Dependencies
-      #   run: echo "Installing dependencies..."
-      # - name: Build
-      #   run: echo "Building project..."
       - name: Build Binary
         # need to add workspace/
         run: |
@@ -30,10 +23,3 @@ jobs:
           mkdir -p /workspace/artifacts
           cp coverage.out /workspace/artifacts/
           echo "Tests passed: $(date)" > /workspace/artifacts/test-report.txt
-
-        # v2:
-        # run: go test -v ./...
-      # v1:
-      #   run: echo "Running tests..."
-      # - name: Run Linter
-      #   run: echo "Running linter..."
