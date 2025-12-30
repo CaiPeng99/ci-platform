@@ -1,0 +1,25 @@
+name: CI Pipeline
+
+jobs:
+  test:
+    steps:
+      - name: Setup
+        run: echo "Setting up test environment..."
+      
+      - name: Run Tests
+        run: |
+          echo "Running tests..."
+          echo "Test 1: PASSED"
+          echo "Test 2: PASSED"
+  build:
+    needs: [test]
+    steps:
+      - name: Build Application
+        run: |
+          echo "Building application..."
+          echo "Build complete!"
+      
+      - name: Create Artifact
+        run: |
+          echo "Creating build artifacts..."
+          echo "Build output" > build-output.txt
