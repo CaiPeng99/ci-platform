@@ -149,6 +149,11 @@ func (s *Server) handleGitHubWebhook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("invalid workflow: %v", err), 400)
 		return
 	}
+
+	log.Printf("📂 Cloned repo to: %s", repoPath)
+
+	// ✅ ADD: Verify what we're about to save
+	log.Printf("🔍 About to CreateRun with repo_path: %s", repoPath)
 	
 	// Create run
 	runID, err := s.store.CreateRun(r.Context(), repoPath, event.Ref, event.After, "webhook")

@@ -447,6 +447,8 @@ func (s *Server) handleTrigger(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	
+
 	// 3. Create run (add trigger parameter)
 	runID, err := s.store.CreateRun(r.Context(), req.RepoPath, req.Ref, req.CommitSHA, "api")
 	if err != nil {
