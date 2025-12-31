@@ -193,11 +193,13 @@ func (s *RunnerServer) LeaseJob(ctx context.Context, req *runnerpb.LeaseJobReque
 				if err != nil {
 					return fmt.Errorf("failed to get job: %w", err)
 				}
+
 				
 				// Mark job as finished
 				if err := s.store.MarkJobFinished(ctx, jobID, status, errMsg); err != nil {
 					return fmt.Errorf("failed to mark job finished: %w", err)
 				}
+
 
 				// ✅ NEW: Update run status based on all jobs
 				if err := s.store.CheckAndUpdateRunStatus(ctx, job.RunID); err != nil {
@@ -267,16 +269,16 @@ func (s *RunnerServer) skipDependentJobs(ctx context.Context, failedJobID int64)
 	// 1. Get the failed job details
 	failedJob, err := s.store.GetJob(ctx, failedJobID)
 	if err != nil {
-		fmt.Errorf("failed to get failed job: %w", err)
+		return fmt.Errorf("failed to get failed job: %w", err)
 	}
 	if failedJob == nil {
-		fmt.Errorf("job %d not found", failedJobID)
+		return fmt.Errorf("job %d not found", failedJobID)
 	}
 
 	// 2. Find jobs that depend on this job
 	dependentJobs, err := s.store.GetDependentJobs(ctx, failedJob.RunID, failedJob.Name)
 	if err != nil {
-		fmt.Errorf("failed to get dependent jobs: %w", err)
+		return fmt.Errorf("failed to get dependent jobs: %w", err)
 	}
 	
 	// 3. Mark all dependent jobs as skipped
