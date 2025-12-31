@@ -626,7 +626,7 @@ func (s *PGStore) MarkJobSkipped(ctx context.Context, jobID int64) error {
 
 func (s *PGStore) GetRun(ctx context.Context, runID int64) (*store.Run, error) {
 	query := `
-		SELECT id, repo, ref, commit_sha, trigger, status, branch,
+		SELECT id, repo, ref, commit_sha, trigger, branch, status,
 		       created_at, started_at, finished_at, error_message
 		FROM runs 
 		WHERE id = $1
