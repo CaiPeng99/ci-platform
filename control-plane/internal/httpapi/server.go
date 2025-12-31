@@ -10,12 +10,15 @@ import (
 	"time"
 	"os"
 	"path/filepath"
+	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 
 	"ci-platform/control-plane/internal/store"
 	"ci-platform/control-plane/internal/logstream"
 	"ci-platform/control-plane/internal/workflow"
+
+	"ci-platform/control-plane/internal/storage"
 	
 )
 
@@ -23,13 +26,15 @@ type Server struct {
 	store store.Store
 	hub   *logstream.Hub
 	rabbit *amqp.Channel
+	minio *storage.MinIOClient
 }
 
-func New(store store.Store, hub *logstream.Hub, rabbit *amqp.Channel) *Server {
+func New(store store.Store, hub *logstream.Hub, rabbit *amqp.Channel, minioClient *storage.MinIOClient) *Server {
 	return &Server{
 		store: store,
 		hub:   hub,
 		rabbit: rabbit,
+		minio: minioClient,
 	}
 }
 
@@ -41,6 +46,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/runs/trigger", s.handleTrigger) // POST
 	mux.HandleFunc("/runs/", s.handleRunsSubroutes) // GET /runs/{id}/jobs
 	mux.HandleFunc("/jobs/", s.handleJobsSubroutes) // GET /jobs/{id}, /jobs/{id}/logs
+	mux.HandleFunc("/artifacts/", s.handleArtifacts) 
+	mux.HandleFunc("/webhooks/github", s.handleGitHubWebhook)
 
 	return withCORS(mux)
 }
@@ -65,25 +72,93 @@ func (s *Server) handleRuns(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, runs)
 }
 
+// func (s *Server) handleRunsSubroutes(w http.ResponseWriter, r *http.Request) {
+// 	// expects /runs/{runID}/jobs
+// 	// /runs/{runID}/rerun
+// 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+// 	if len(parts) != 3 || parts[0] != "runs" {
+// 		// http.Error(w, "Not found", ) # http.StatusNotFound
+// 		http.NotFound(w, r)
+// 		return
+// 	}
+
+// 	runID, err := strconv.ParseInt(parts[1], 10, 64)
+// 	if err != nil {
+// 		http.Error(w, "Invalid run ID", 400) // http.StatusBadRequest
+// 		return
+// 	}
+// 	if r.Method != http.MethodGet {
+// 		http.Error(w, "Method not allowed", 405) // http.StatusMethodNotAllowed
+// 		return
+// 	}
+
+// 	// Handle /runs/{runID}/rerun
+// 	if parts[2] == "rerun" {
+// 		if r.Method != http.MethodPost {
+// 			http.Error(w, "Method not allowed", 405)
+// 			return
+// 		}
+// 		s.handleRerunRun(w, r)
+// 		return
+// 	}
+
+// 	// Handle /runs/{runID}/jobs
+// 	if parts[2] == "jobs" {
+// 		if r.Method != http.MethodGet {
+// 			http.Error(w, "Method not allowed", 405)
+// 			return
+// 		}
+		
+// 		jobs, err := s.store.ListJobsByRun(r.Context(), runID)
+// 		if err != nil {
+// 			http.Error(w, fmt.Sprintf("Failed to list jobs: %v", err), 500)
+// 			return
+// 		}
+
+// 		writeJSON(w, jobs)
+// 		return
+// 	}
+	
+// 	http.NotFound(w, r)
+// }
+
 func (s *Server) handleRunsSubroutes(w http.ResponseWriter, r *http.Request) {
-	// expects /runs/{runID}/jobs
+	// Handles:
+	// GET  /runs/{runID}/jobs
+	// POST /runs/{runID}/rerun
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-	if len(parts) != 3 || parts[0] != "runs" || parts[2] != "jobs" {
-		// http.Error(w, "Not found", ) # http.StatusNotFound
+	
+	// Check basic structure
+	if len(parts) != 3 || parts[0] != "runs" {
 		http.NotFound(w, r)
 		return
 	}
 
+	// Parse run ID
 	runID, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid run ID", 400) // http.StatusBadRequest
-		return
-	}
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", 405) // http.StatusMethodNotAllowed
+		http.Error(w, "Invalid run ID", 400)
 		return
 	}
 
+	// Route to appropriate handler
+	switch parts[2] {
+	case "rerun":
+		s.handleRerunRun(w, r)
+	case "jobs":
+		s.handleRunJobs(w, r, runID)
+	default:
+		http.NotFound(w, r)
+	}
+}
+
+// Split out the jobs handler
+func (s *Server) handleRunJobs(w http.ResponseWriter, r *http.Request, runID int64) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", 405)
+		return
+	}
+	
 	jobs, err := s.store.ListJobsByRun(r.Context(), runID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to list jobs: %v", err), 500)
@@ -91,6 +166,59 @@ func (s *Server) handleRunsSubroutes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, jobs)
+}
+
+// Add the rerun handler
+func (s *Server) handleRerunRun(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", 405)
+		return
+	}
+	
+	// Extract run ID from URL
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	runID, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid run ID", 400)
+		return
+	}
+	
+	// Get all jobs for this run
+	jobs, err := s.store.ListJobsByRun(r.Context(), runID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get jobs: %v", err), 500)
+		return
+	}
+	
+	// Reset all jobs
+	resetCount := 0
+	for _, job := range jobs {
+		if err := s.store.ResetJob(r.Context(), job.ID); err != nil {
+			log.Printf("Failed to reset job %d: %v", job.ID, err)
+			continue
+		}
+		resetCount++
+		
+		// Enqueue jobs with no dependencies
+		if len(job.Needs) == 0 {
+			if err := s.enqueueJob(r.Context(), job.ID); err != nil {
+				log.Printf("Failed to enqueue job %d: %v", job.ID, err)
+			} else {
+				log.Printf("✅ Enqueued job %d (%s)", job.ID, job.Name)
+			}
+		}
+	}
+	
+	// Update run status to running
+	if err := s.store.UpdateRunStatus(r.Context(), runID, "running"); err != nil {
+		log.Printf("Failed to update run status: %v", err)
+	}
+	
+	writeJSON(w, map[string]interface{}{
+		"status":      "rerunning",
+		"run_id":      runID,
+		"jobs_reset":  resetCount,
+	})
 }
 
 func (s *Server) handleJobsSubroutes(w http.ResponseWriter, r *http.Request) {
@@ -142,6 +270,22 @@ func (s *Server) handleJobsSubroutes(w http.ResponseWriter, r *http.Request) {
 			s.handleJobLogStream(w, r, jobID)
 			return
 		}
+	}
+
+	// GET /jobs/{jobID}/artifacts
+	if len(parts) == 3 && parts[2] == "artifacts" {
+		artifacts, err := s.store.ListArtifactsByJob(r.Context(), jobID)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		writeJSON(w, artifacts)
+		return
+	}
+
+	if len(parts) == 3 && parts[2] == "rerun" {
+		s.handleJobRerun(w, r)
+		return
 	}
 
 	http.NotFound(w, r)
@@ -243,7 +387,8 @@ func writeSSE(w http.ResponseWriter, event string, data string) {
 // minimal CORS for local React dev server
 func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")  // React dev se
+		// w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		
@@ -387,3 +532,190 @@ func (s *Server) enqueueJob(ctx context.Context, jobID int64) error {
 	fmt.Printf("✅ Enqueued job %d to RabbitMQ\n", jobID)
 	return nil
 }
+
+// Get presigned upload URL
+func (s *Server) handleArtifacts(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+
+	// POST /artifacts/upload-url - Get presigned upload URL
+	if len(parts) == 2 && parts[1] == "upload-url" && r.Method == http.MethodPost {
+		var req struct {
+			JobID    int64  `json:"job_id"`
+			Filename string `json:"filename"`
+		}
+		
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "bad request", 400)
+			return
+		}
+		
+		// Generate S3 key
+		objectKey := fmt.Sprintf("artifacts/job-%d/%s", req.JobID, req.Filename)
+		
+		// Generate presigned URL (valid for 10 minutes)
+		uploadURL, err := s.minio.GetPresignedPutURL(r.Context(), objectKey, 10*time.Minute)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to generate upload URL: %v", err), 500)
+			return
+		}
+
+		writeJSON(w, map[string]string{
+			"upload_url": uploadURL,
+			"object_key": objectKey,
+		})
+		return
+	}
+
+	// POST /artifacts/complete - Mark upload as complete
+	if len(parts) == 2 && parts[1] == "complete" && r.Method == http.MethodPost {
+		var req struct {
+			JobID       int64  `json:"job_id"`
+			Filename    string `json:"filename"`
+			ObjectKey   string `json:"object_key"`
+			SizeBytes   int64  `json:"size_bytes"`
+			ContentType string `json:"content_type"`
+		}
+		
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "bad request", 400)
+			return
+		}
+		
+		// Save metadata to database
+		artifactID, err := s.store.CreateArtifact(
+			r.Context(),
+			req.JobID,
+			req.Filename,
+			req.ObjectKey,
+			req.SizeBytes,
+			req.ContentType,
+		)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to save artifact metadata: %v", err), 500)
+			return
+		}
+		
+		writeJSON(w, map[string]int64{"artifact_id": artifactID})
+		return
+	}
+	
+	// GET /artifacts/{id}/download - Get presigned download URL
+	if len(parts) == 3 && parts[2] == "download" && r.Method == http.MethodGet {
+		artifactID, err := strconv.ParseInt(parts[1], 10, 64)
+		if err != nil {
+			http.Error(w, "invalid artifact id", 400)
+			return
+		}
+		
+		artifact, err := s.store.GetArtifact(r.Context(), artifactID)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		if artifact == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		// Generate presigned download URL (valid for 1 hour)
+		downloadURL, err := s.minio.GetPresignedGetURL(r.Context(), artifact.S3Key, time.Hour)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to generate download URL: %v", err), 500)
+			return
+		}
+		
+		writeJSON(w, map[string]string{
+			"download_url": downloadURL,
+		})
+		return
+	}
+	
+	http.NotFound(w, r)
+}
+
+// POST /jobs/{id}/rerun
+func (s *Server) handleJobRerun(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", 405)
+		return
+	}
+	
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) != 3 || parts[2] != "rerun" {
+		http.NotFound(w, r)
+		return
+	}
+	
+	jobID, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		http.Error(w, "invalid job id", 400)
+		return
+	}
+	
+	// Reset job status
+	if err := s.store.ResetJob(r.Context(), jobID); err != nil {
+		http.Error(w, fmt.Sprintf("failed to reset job: %v", err), 500)
+		return
+	}
+	
+	// Enqueue job
+	if err := s.enqueueJob(r.Context(), jobID); err != nil {
+		http.Error(w, fmt.Sprintf("failed to enqueue job: %v", err), 500)
+		return
+	}
+	
+	writeJSON(w, map[string]string{"status": "requeued"})
+}
+
+// POST /runs/{id}/rerun
+// func (s *Server) handleRerunRun(w http.ResponseWriter, r *http.Request) {
+// 	if r.Method != http.MethodPost {
+// 		http.Error(w, "method not allowed", 405)
+// 		return
+// 	}
+	
+// 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+// 	if len(parts) != 3 || parts[2] != "rerun" {
+// 		http.NotFound(w, r)
+// 		return
+// 	}
+	
+// 	runID, err := strconv.ParseInt(parts[1], 10, 64)
+// 	if err != nil {
+// 		http.Error(w, "invalid run id", 400)
+// 		return
+// 	}
+	
+// 	// Get all jobs for this run
+// 	jobs, err := s.store.ListJobsByRun(r.Context(), runID)
+// 	if err != nil {
+// 		http.Error(w, fmt.Sprintf("failed to get jobs: %v", err), 500)
+// 		return
+// 	}
+	
+// 	// Reset all jobs
+// 	for _, job := range jobs {
+// 		if err := s.store.ResetJob(r.Context(), job.ID); err != nil {
+// 			log.Printf("Failed to reset job %d: %v", job.ID, err)
+// 			continue
+// 		}
+		
+// 		// Enqueue jobs with no dependencies
+// 		if len(job.Needs) == 0 {
+// 			if err := s.enqueueJob(r.Context(), job.ID); err != nil {
+// 				log.Printf("Failed to enqueue job %d: %v", job.ID, err)
+// 			}
+// 		}
+// 	}
+	
+// 	// Update run status
+// 	if err := s.store.UpdateRunStatus(r.Context(), runID, "running"); err != nil {
+// 		log.Printf("Failed to update run status: %v", err)
+// 	}
+	
+// 	writeJSON(w, map[string]interface{}{
+// 		"status": "rerunning",
+// 		"run_id": runID,
+// 		"jobs_reset": len(jobs),
+// 	})
+// }

@@ -108,3 +108,13 @@ message JobFinished {
 message ReportAck {
     bool ok = 1;
 }
+
+message ArtifactUploadRequest {
+    string job_id = 1;
+    string filename = 2;
+}
+
+message ArtifactUploadResponse {
+    string upload_url = 1;
+    string object_key = 2;
+}

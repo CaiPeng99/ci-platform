@@ -1,0 +1,4 @@
+mode: set
+example.com/demo/main.go:7.28,9.2 1 1
+example.com/demo/main.go:11.29,13.2 1 1
+example.com/demo/main.go:15.13,17.2 1 0

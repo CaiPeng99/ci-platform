@@ -74,6 +74,16 @@ type LogChunk struct {
 	Timestamp time.Time
 }
 
+type Artifact struct {
+	ID          int64
+	JobID       int64
+	Name        string
+	S3Key       string  // Changed from Path
+	SizeBytes   int64
+	ContentType string
+	CreatedAt   time.Time
+}
+
 type Store interface {
 	// Run related methods
 	CreateRun(ctx context.Context, repo, ref, sha, trigger string) (int64, error)
@@ -116,4 +126,13 @@ type Store interface {
 
 	// added
 	GetRun(ctx context.Context, runID int64) (*Run, error) 
+
+	UpdateRunStatus(ctx context.Context, runID int64, status string) error
+	CheckAndUpdateRunStatus(ctx context.Context, runID int64) error
+
+	CreateArtifact(ctx context.Context, jobID int64, name, s3Key string, sizeBytes int64, contentType string) (int64, error)
+	ListArtifactsByJob(ctx context.Context, jobID int64) ([]Artifact, error)
+	GetArtifact(ctx context.Context, artifactID int64) (*Artifact, error)
+
+	ResetJob(ctx context.Context, jobID int64) (error)
 }

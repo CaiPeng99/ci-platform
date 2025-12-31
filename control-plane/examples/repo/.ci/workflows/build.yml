@@ -8,7 +8,9 @@ jobs:
         # need to add workspace/
         # remove previous comments
         run: |
-          go build -o demo .
+          echo "=== Building ==="
+          go build -v -o demo .
+          echo "✅ Build successful"
           mkdir -p /workspace/artifacts
           cp demo /workspace/artifacts/demo-binary
           echo "Build: $(date)" > /workspace/artifacts/build-info.txt
@@ -20,7 +22,10 @@ jobs:
     steps:
       - name: Run Tests
         run: |
-          go test -v -coverprofile=coverage.out ./...
+          echo "=== Running Tests ==="
+          go test -v -coverprofile=/workspace/coverage.out ./...
+          echo "✅ Tests complete"
           mkdir -p /workspace/artifacts
-          cp coverage.out /workspace/artifacts/
+          cp /workspace/coverage.out /workspace/artifacts/
           echo "Tests passed: $(date)" > /workspace/artifacts/test-report.txt
+          ls -lh /workspace/artifacts/

@@ -673,3 +673,117 @@ func (s *PGStore) GetRun(ctx context.Context, runID int64) (*store.Run, error) {
 	
 	return &run, nil
 }
+
+func (s *PGStore) UpdateRunStatus(ctx context.Context, runID int64, status string) error {
+	query := `UPDATE runs SET status = $1 WHERE id = $2`
+	_, err := s.pool.Exec(ctx, query, status, runID)
+	return err
+}
+
+// CheckAndUpdateRunStatus checks all jobs in a run and updates run status accordingly
+func (s *PGStore) CheckAndUpdateRunStatus(ctx context.Context, runID int64) error {
+	query := `
+		SELECT 
+			COUNT(*) as total_jobs,
+			COUNT(*) FILTER (WHERE status = 'success') as successful_jobs,
+			COUNT(*) FILTER (WHERE status = 'failed') as failed_jobs,
+			COUNT(*) FILTER (WHERE status = 'running') as running_jobs,
+			COUNT(*) FILTER (WHERE status IN ('queued', 'pending')) as pending_jobs
+		FROM jobs
+		WHERE run_id = $1
+	`
+	
+	var total, successful, failed, running, pending int
+	err := s.pool.QueryRow(ctx, query, runID).Scan(&total, &successful, &failed, &running, &pending)
+	if err != nil {
+		return err
+	}
+	
+	var runStatus string
+	if failed > 0 {
+		runStatus = "failed"
+	} else if running > 0 {
+		runStatus = "running"
+	} else if pending > 0 {
+		runStatus = "running"  // Some jobs still pending
+	} else if successful == total {
+		runStatus = "success"
+	} else {
+		runStatus = "running"
+	}
+	
+	return s.UpdateRunStatus(ctx, runID, runStatus)
+}
+
+func (s *PGStore) CreateArtifact(ctx context.Context, jobID int64, name, s3Key string, sizeBytes int64, contentType string) (int64, error) {
+	var id int64
+	err := s.pool.QueryRow(ctx,
+		`INSERT INTO artifacts (job_id, name, s3_key, size_bytes, content_type)
+		 VALUES ($1, $2, $3, $4, $5)
+		 RETURNING id`,
+		jobID, name, s3Key, sizeBytes, contentType).Scan(&id)
+	return id, err
+}
+
+func (s *PGStore) ListArtifactsByJob(ctx context.Context, jobID int64) ([]store.Artifact, error) {
+	query := `
+		SELECT id, job_id, name, s3_key, size_bytes, content_type, created_at
+		FROM artifacts
+		WHERE job_id = $1
+		ORDER BY created_at DESC
+	`
+	
+	rows, err := s.pool.Query(ctx, query, jobID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	
+	var artifacts []store.Artifact
+	for rows.Next() {
+		var a store.Artifact
+		err := rows.Scan(&a.ID, &a.JobID, &a.Name, &a.S3Key, &a.SizeBytes, &a.ContentType, &a.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		artifacts = append(artifacts, a)
+	}
+	
+	return artifacts, rows.Err()
+}
+
+func (s *PGStore) GetArtifact(ctx context.Context, artifactID int64) (*store.Artifact, error) {
+	query := `
+		SELECT id, job_id, name, s3_key, size_bytes, content_type, created_at
+		FROM artifacts
+		WHERE id = $1
+	`
+	
+	var a store.Artifact
+	err := s.pool.QueryRow(ctx, query, artifactID).Scan(
+		&a.ID, &a.JobID, &a.Name, &a.S3Key, &a.SizeBytes, &a.ContentType, &a.CreatedAt)
+	
+	if err == pgx.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	
+	return &a, nil
+}
+
+func (s *PGStore) ResetJob(ctx context.Context, jobID int64) error {
+	_, err := s.pool.Exec(ctx,
+		`UPDATE jobs 
+		 SET status = 'queued', 
+		     runner_id = NULL,
+		     lease_expires_at = NULL,
+		     started_at = NULL,
+		     finished_at = NULL,
+		     error_message = NULL
+		 WHERE id = $1`,
+		jobID)
+	return err
+}
+

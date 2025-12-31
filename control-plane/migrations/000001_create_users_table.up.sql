@@ -9,16 +9,7 @@
 
 create type run_status as enum ('queued','running','success','failed','canceled');
 create type job_status as enum ('pending','running','success','failed','canceled', 'queued', 'skipped');
-create type step_status as enum ('pending','running','success','failed','canceled');
-
--- CREATE TABLE projects (
---     id SERIAL PRIMARY KEY,
---     name VARCHAR(100) NOT NULL,
---     repo_url VARCHAR(255) NOT NULL,
---     webhook_secret VARCHAR(255),
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
--- )            
+create type step_status as enum ('pending','running','success','failed','canceled');    
 
 -- One pipeline execution triggered by a push/PR/manual trigger
 CREATE TABLE runs (
@@ -92,6 +83,15 @@ CREATE TABLE log_chunks (
   content text not null
 );
 
+CREATE TABLE artifacts (
+    id BIGSERIAL PRIMARY KEY,
+    job_id BIGINT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    s3_key TEXT NOT NULL,           -- MinIO/S3 object key
+    size_bytes BIGINT NOT NULL,
+    content_type VARCHAR(100),
+    created_at TIMESTAMPTZ DEFAULT now()
+)
 
 CREATE INDEX log_chunks_job_id_id_idx on log_chunks(job_id, id);
 CREATE INDEX jobs_run_id_idx on jobs(run_id);
@@ -101,3 +101,5 @@ CREATE INDEX jobs_lease_expires_at_idx ON jobs(lease_expires_at) WHERE status = 
 CREATE INDEX idx_steps_status ON steps(status);
 
 CREATE INDEX steps_job_id_idx on steps(job_id);
+
+CREATE INDEX idx_artifacts_job_id ON artifacts(job_id);

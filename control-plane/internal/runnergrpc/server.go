@@ -166,30 +166,46 @@ func (s *RunnerServer) LeaseJob(ctx context.Context, req *runnerpb.LeaseJobReque
 				_ = s.store.MarkStepFinished(ctx, stepID, status, &exit, errMsg)
 			
 			case *runnerpb.RunnerEvent_JobFinished:
-			status := e.JobFinished.Status
-			var errMsg *string
-			if e.JobFinished.ErrorMessage != "" {
-				s := e.JobFinished.ErrorMessage
-				errMsg = &s
-			}
-			
-			// Mark job as finished
-			if err := s.store.MarkJobFinished(ctx, jobID, status, errMsg); err != nil {
-				return fmt.Errorf("failed to mark job finished: %w", err)
-			}
-			
-			// Handle dependent jobs based on status
-			if status == "success" {
-				// Job succeeded - enqueue dependent jobs
-				if err := s.enqueueDependentJobs(ctx, jobID); err != nil {
-					log.Printf("Warning: failed to enqueue dependent jobs for job %d: %v", jobID, err)
+				status := e.JobFinished.Status
+				var errMsg *string
+				if e.JobFinished.ErrorMessage != "" {
+					s := e.JobFinished.ErrorMessage
+					errMsg = &s
 				}
-			} else if status == "failed" {
-				// Job failed - skip dependent jobs
-				if err := s.skipDependentJobs(ctx, jobID); err != nil {
-					log.Printf("Warning: failed to skip dependent jobs for job %d: %v", jobID, err)
+
+				// Get job to find its run_id
+				job, err := s.store.GetJob(ctx, jobID)
+				if err != nil {
+					return fmt.Errorf("failed to get job: %w", err)
 				}
-			}
+				
+				// Mark job as finished
+				if err := s.store.MarkJobFinished(ctx, jobID, status, errMsg); err != nil {
+					return fmt.Errorf("failed to mark job finished: %w", err)
+				}
+
+				// ✅ NEW: Update run status based on all jobs
+				if err := s.store.CheckAndUpdateRunStatus(ctx, job.RunID); err != nil {
+					log.Printf("Warning: failed to update run status: %v", err)
+				}
+						
+				// Handle dependent jobs based on status
+				if status == "success" {
+					// Job succeeded - enqueue dependent jobs
+					if err := s.enqueueDependentJobs(ctx, jobID); err != nil {
+						log.Printf("Warning: failed to enqueue dependent jobs for job %d: %v", jobID, err)
+					}
+				} else if status == "failed" {
+					// Job failed - skip dependent jobs
+					if err := s.skipDependentJobs(ctx, jobID); err != nil {
+						log.Printf("Warning: failed to skip dependent jobs for job %d: %v", jobID, err)
+					}
+
+					// ✅ Also update run status when job fails
+					if err := s.store.CheckAndUpdateRunStatus(ctx, job.RunID); err != nil {
+						log.Printf("Warning: failed to update run status: %v", err)
+					}
+				}
 
 			}
 	}

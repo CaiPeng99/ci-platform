@@ -18,6 +18,8 @@ import (
 	"ci-platform/control-plane/proto/runnerpb"
 	"ci-platform/control-plane/internal/logstream"
 	"ci-platform/control-plane/internal/httpapi"
+
+	"ci-platform/control-plane/internal/storage"
 )
 
 func main() {
@@ -94,8 +96,20 @@ func main() {
 		}
 	}()
 
+	// Initialize MinIO
+	minioClient, err := storage.NewMinIOClient(
+		"localhost:9000",    // MinIO endpoint
+		"minioadmin",        // Access key
+		"minioadmin",        // Secret key
+		"ci-artifacts",      // Bucket name
+	)
+	if err != nil {
+		log.Fatalf("Failed to initialize MinIO: %v", err)
+	}
+	log.Println("✅ Connected to MinIO")
+
 	// 6. Start HTTP API server (pass hub to http api server)
-	httpServer := httpapi.New(store, hub, rabbitCh)
+	httpServer := httpapi.New(store, hub, rabbitCh, minioClient)
 	httpHandler := httpServer.Handler()
 
 	httpAddr := ":8080"

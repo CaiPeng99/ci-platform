@@ -31,5 +31,6 @@ vendor/
 *.dll
 *.so
 *.dylib
-```
+
+.env
 
