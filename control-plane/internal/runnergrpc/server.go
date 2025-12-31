@@ -92,22 +92,37 @@ func (s *RunnerServer) LeaseJob(ctx context.Context, req *runnerpb.LeaseJobReque
 			return nil, err
 		}
 	}
+	
+	run, err := s.store.GetRun(ctx, spec.RunID)
+	if err != nil {
+		log.Printf("Failed to get run: %v", err)
+		_ = d.Nack(false, true)
+		return nil, err
+	}
+
+	// log.Printf("🔍 ClaimJob - Run %d has repo: %s", run.ID, run.Repo)  // ✅ ADD DEBUG
+
+
 
 		_ = d.Ack(false) // ✅ Success - ack the message
 		resp := &runnerpb.LeaseJobResponse{
 			HasJob: true,
 			JobSpec: &runnerpb.JobSpec{
-				// JobId:    spec.JobID,
-				// RunId:    spec.RunID,
-				JobId:          strconv.FormatInt(spec.JobID, 10),
-				RunId:          strconv.FormatInt(spec.RunID, 10),
-				Repo:     spec.Repo,
-				Ref:      spec.Ref,
-				CommitSha: spec.CommitSHA,
+				// JobId:          strconv.FormatInt(spec.JobID, 10),
+				// RunId:          strconv.FormatInt(spec.RunID, 10),
+				//  Repo:     spec.Repo,
+				// Ref:      spec.Ref,
+				// CommitSha: spec.CommitSHA,
+				// JobName:  spec.JobName,
+				// ContainerImage: "ci-runner-image:latest", // hardcoded for now
+				// RepoPath:       spec.Repo,
+				Repo:     run.Repo,      // ✅ Should be the cloned path
+				Ref:      run.Ref,
+				CommitSha: run.CommitSHA,
 				JobName:  spec.JobName,
-				ContainerImage: "ci-runner-image:latest", // hardcoded for now
-				RepoPath:       spec.Repo, 
-			},
+				ContainerImage: "ci-runner-image:latest",
+				RepoPath: run.Repo,      // ✅ This is what runner uses!
+					},
 		}
 		for _, step := range spec.Steps {
 			resp.JobSpec.Steps = append(resp.JobSpec.Steps, &runnerpb.StepSpec{
