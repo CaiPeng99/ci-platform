@@ -108,8 +108,8 @@ func (s *RunnerServer) LeaseJob(ctx context.Context, req *runnerpb.LeaseJobReque
 		resp := &runnerpb.LeaseJobResponse{
 			HasJob: true,
 			JobSpec: &runnerpb.JobSpec{
-				// JobId:          strconv.FormatInt(spec.JobID, 10),
-				// RunId:          strconv.FormatInt(spec.RunID, 10),
+				JobId:          strconv.FormatInt(spec.JobID, 10),
+				RunId:          strconv.FormatInt(spec.RunID, 10),
 				//  Repo:     spec.Repo,
 				// Ref:      spec.Ref,
 				// CommitSha: spec.CommitSHA,
