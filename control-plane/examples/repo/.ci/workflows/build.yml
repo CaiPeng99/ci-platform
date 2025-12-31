@@ -6,7 +6,6 @@ jobs:
     steps:
       - name: Build Binary
         # need to add workspace/
-        # remove previous comments
         run: |
           echo "=== Building ==="
           go build -v -o demo .
