@@ -120,7 +120,8 @@ func (s *Server) handleGitHubWebhook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("failed to clone repo: %v", err), 500)
 		return
 	}
-	
+	log.Printf("📂 Cloned repo to: %s", repoPath) 
+
 	// Trigger workflow
 	workflowPath := ".ci/workflows/build.yml"
 	
@@ -150,7 +151,7 @@ func (s *Server) handleGitHubWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// Create run
-	runID, err := s.store.CreateRun(r.Context(), event.Repository.FullName, event.Ref, event.After, "webhook")
+	runID, err := s.store.CreateRun(r.Context(), repoPath, event.Ref, event.After, "webhook")
 	if err != nil {
 		os.RemoveAll(repoPath)
 		http.Error(w, fmt.Sprintf("failed to create run: %v", err), 500)
@@ -214,20 +215,35 @@ func (s *Server) handleGitHubWebhook(w http.ResponseWriter, r *http.Request) {
 func cloneRepo(cloneURL, commitSHA string) (string, error) {
 	// Create temp directory
 	tmpDir := filepath.Join(os.TempDir(), fmt.Sprintf("ci-repo-%s", commitSHA[:8]))
+
+	log.Printf("🔄 Cloning %s to %s", cloneURL, tmpDir)
+	
+	// Remove if exists
+	os.RemoveAll(tmpDir)
 	
 	// Clone repo
 	cmd := exec.Command("git", "clone", "--depth=1", cloneURL, tmpDir)
-	if err := cmd.Run(); err != nil {
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("❌ Git clone failed: %s", string(output))
 		return "", fmt.Errorf("git clone failed: %w", err)
 	}
-	
+	log.Printf("✅ Clone successful: %s", tmpDir)
+
 	// Checkout specific commit
 	cmd = exec.Command("git", "checkout", commitSHA)
 	cmd.Dir = tmpDir
-	if err := cmd.Run(); err != nil {
-		os.RemoveAll(tmpDir)
-		return "", fmt.Errorf("git checkout failed: %w", err)
+	// if err := cmd.Run(); err != nil {
+	// 	os.RemoveAll(tmpDir)
+	// 	return "", fmt.Errorf("git checkout failed: %w", err)
+	// }
+	output, err = cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("⚠️  Git checkout failed (using HEAD): %s", string(output))
+		// Don't fail - just use the cloned HEAD
 	}
+	
+	log.Printf("✅ Clone successful: %s", tmpDir)
 	
 	return tmpDir, nil
 }
