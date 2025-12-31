@@ -349,5 +349,5 @@ func (s *RunnerServer) enqueueJob(ctx context.Context, jobID int64) error {
 		return fmt.Errorf("failed to publish to RabbitMQ: %w", err)
 	}
 	
-	return nil
+	return nil // 
 }
