@@ -24,7 +24,7 @@ CREATE TABLE jobs (
     run_id INTEGER REFERENCES runs(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     status job_status NOT NULL DEFAULT 'pending',
-    needs text[] not null DEFAULT '{}',
+    needs text[],
     attempts INTEGER NOT NULL DEFAULT 0,
     max_attempts INTEGER NOT NULL DEFAULT 1,
     runs_on text NOT NULL DEFAULT 'Linux',
