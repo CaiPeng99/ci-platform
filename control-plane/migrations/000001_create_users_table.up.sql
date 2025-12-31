@@ -1,12 +1,3 @@
--- CREATE TABLE users (
---     id SERIAL PRIMARY KEY,
---     username VARCHAR(50) NOT NULL UNIQUE,
---     email VARCHAR(100) NOT NULL UNIQUE,
---     password_hash VARCHAR(255) NOT NULL,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
-
 create type run_status as enum ('queued','running','success','failed','canceled');
 create type job_status as enum ('pending','running','success','failed','canceled', 'queued', 'skipped');
 create type step_status as enum ('pending','running','success','failed','canceled');    
@@ -23,7 +14,8 @@ CREATE TABLE runs (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     finished_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     started_at TIMESTAMP,
-    error_message TEXT
+    error_message TEXT,
+    branch TEXT
 );
 
 -- A job is a unit scheduled onto a runner (like Actions job)
@@ -91,7 +83,7 @@ CREATE TABLE artifacts (
     size_bytes BIGINT NOT NULL,
     content_type VARCHAR(100),
     created_at TIMESTAMPTZ DEFAULT now()
-)
+);
 
 CREATE INDEX log_chunks_job_id_id_idx on log_chunks(job_id, id);
 CREATE INDEX jobs_run_id_idx on jobs(run_id);
