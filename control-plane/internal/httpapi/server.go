@@ -387,7 +387,8 @@ func writeSSE(w http.ResponseWriter, event string, data string) {
 // minimal CORS for local React dev server
 func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")  // React dev se
+		// w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")  // React dev se
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost") // for production build served from control plane
 		// w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")

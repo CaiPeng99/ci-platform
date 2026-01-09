@@ -34,3 +34,4 @@ vendor/
 
 .env
 
+.DS_Store

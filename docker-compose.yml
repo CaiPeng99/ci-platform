@@ -1,7 +1,7 @@
-version: "3.8"
+# version: "3.8"
 
 services:
-  db:
+  postgres:
     image: postgres:16
     environment:
       POSTGRES_USER: postgres
@@ -10,11 +10,28 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # ← Persists data
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ci-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   rabbitmq:
     image: rabbitmq:3-management
-    ports: ["5672:5672", "15672:15672"]
-  
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - ci-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   minio:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
@@ -22,16 +39,93 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     ports:
-      - "9000:9000"  # API
-      - "9001:9001"  # Web Console
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - minio_data:/data
+    networks:
+      - ci-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3
 
+  control-plane:
+    build:
+      context: .
+      dockerfile: control-plane/Dockerfile
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@postgres:5432/cicd?sslmode=disable"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      GRPC_PORT: "9090"
+      HTTP_PORT: "8080"
+    ports:
+      - "9090:9090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./control-plane/examples:/app/examples:ro
+    networks:
+      - ci-network
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    environment:
+      VITE_API_URL: /api
+    depends_on:
+      - control-plane
+    networks:
+      - ci-network
+
+  runner:
+    build:
+      context: .
+      dockerfile: runner/Dockerfile
+    environment:
+      RUNNER_ID: docker-runner-1
+      # CONTROL_PLANE_ADDR: control-plane:9090
+      CONTROL_PLANE_ADDR: http://control-plane:9090
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./control-plane/examples:/app/examples:ro
+    depends_on:
+      - control-plane
+    networks:
+      - ci-network
+    
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - control-plane
+      - dashboard
+    networks:
+      - ci-network
+
+networks:
+  ci-network:
+    driver: bridge
+
 volumes:
-  postgres_data:  # ← Docker manages this storage
+  postgres_data:
   minio_data:

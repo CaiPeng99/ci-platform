@@ -97,16 +97,42 @@ func main() {
 	}()
 
 	// Initialize MinIO
+	// minioClient, err := storage.NewMinIOClient(
+	// 	"localhost:9000",    // MinIO endpoint
+	// 	"minioadmin",        // Access key
+	// 	"minioadmin",        // Secret key
+	// 	"ci-artifacts",      // Bucket name
+	// )
+	// MinIO client - use environment variables
+	minioEndpoint := os.Getenv("MINIO_ENDPOINT")
+	if minioEndpoint == "" {
+		minioEndpoint = "localhost:9000"
+	}
+	minioAccessKey := os.Getenv("MINIO_ACCESS_KEY")
+	if minioAccessKey == "" {
+		minioAccessKey = "minioadmin"
+	}
+	minioSecretKey := os.Getenv("MINIO_SECRET_KEY")
+	if minioSecretKey == "" {
+		minioSecretKey = "minioadmin"
+	}
+
 	minioClient, err := storage.NewMinIOClient(
-		"localhost:9000",    // MinIO endpoint
-		"minioadmin",        // Access key
-		"minioadmin",        // Secret key
-		"ci-artifacts",      // Bucket name
+		minioEndpoint,
+		minioAccessKey,
+		minioSecretKey,
+		"ci-artifacts",
 	)
 	if err != nil {
-		log.Fatalf("Failed to initialize MinIO: %v", err)
+		log.Printf("⚠️ MinIO not available: %v", err)
+		// Continue without MinIO - don't exit
+	} else {
+		log.Println("✅ Connected to MinIO")
 	}
-	log.Println("✅ Connected to MinIO")
+	// if err != nil {
+	// 	log.Fatalf("Failed to initialize MinIO: %v", err)
+	// }
+	// log.Println("✅ Connected to MinIO")
 
 	// 6. Start HTTP API server (pass hub to http api server)
 	httpServer := httpapi.New(store, hub, rabbitCh, minioClient)
