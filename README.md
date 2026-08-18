@@ -1,6 +1,6 @@
 # 🚀 CI Platform
 
-A **self-hosted distributed CI/CD platform** built from scratch with a microservice architecture. Define workflows in YAML, execute jobs across multiple Rust-powered runners, and stream build logs in real-time to a React dashboard.
+A **distributed CI platform** built from scratch with a microservice architecture. Define workflows in YAML, execute jobs across multiple Rust-powered runners, and stream build logs in real-time to a React dashboard.
 
 > Think GitHub Actions — but self-hosted and fully under your control.
 
